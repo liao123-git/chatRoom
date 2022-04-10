@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>即时聊天</title>
+    <script src="https://cdn.staticfile.org/vue/3.2.30/vue.global.js"></script>
+    <script src="config.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+<main id="app">
+    <div class="chat" v-if="!userInfo.show">
+        <aside>
+            <div class="avatar aside__avatar">
+                <img :src="userInfo.avatar" alt="">
+            </div>
+            <div class="aside__menu">
+                <a href="javascript:void(0);" class="active">
+                    <img src="./imgs/message.svg" alt="">
+                </a>
+                <a href="javascript:void(0);">
+                    <img src="./imgs/vote.svg" alt="">
+                </a>
+            </div>
+        </aside>
+        <div class="wrap">
+            <div class="wrap__left">
+                <div class="functional_area">
+                    <div class="functional__top">
+                        <p>即时聊天</p>
+                        <div class="functional__btns">
+                            <a href="javascript:void(0);">
+                                <img src="./imgs/remind.svg" alt="">
+                            </a>
+                            <a href="javascript:void(0);">
+                                <img src="./imgs/more.svg" alt="">
+                            </a>
+                        </div>
+                    </div>
+                    <div class="functional__search">
+                        <select>
+                            <option value="all">所有</option>
+                            <option>adsfasdf</option>
+                        </select>
+                        <input type="text" placeholder="搜索..." class="search__input">
+                    </div>
+                </div>
+                <div class="room__list">
+                    <div class="room active">
+                        <div class="avatar wrap__avatar">
+                            <img src="./imgs/avatar3.jpg" alt="">
+                        </div>
+                        <div class="room__info">
+                            <span>公共聊天室({{ userInfo.roomId }})</span>
+                            <span>{{ newMessage ? newMessage.datetime : '' }}</span>
+                            <p><span class="spanStyle">{{ newMessage ? newMessage.msg : '' }}</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="wrap__right">
+                <div class="dialog">
+                    <div class="dialog__header">
+                        <div class="avatar wrap__avatar">
+                            <img src="./imgs/avatar3.jpg" alt="">
+                        </div>
+                        <div class="room__info">
+                            <span>公共聊天室({{ userInfo.roomId }})</span>
+                        </div>
+                    </div>
+                    <div class="message-list" id="message_list">
+                        <div v-for="msg of messageList">
+                            <div class="message" v-if="msg.event === 'message'"
+                                 :class="{ isMe : msg.nickname === userInfo.nickname }"
+                                 :title="msg.nickname">
+                                <div class="avatar wrap__avatar">
+                                    <img :src="msg.avatar" alt="">
+                                </div>
+                                <div>
+                                    <div class="message__content">
+                                        <p v-html="msg.msg"></p>
+                                    </div>
+                                    <span>{{ msg.datetime }}</span>
+                                </div>
+                            </div>
+                            <div v-if="msg.event === 'welcome'" class="notice">
+                                <p>欢迎 {{ msg.nickname }}</p>
+                            </div>
+                            <div v-if="msg.event === 'leave'" class="notice">
+                                <p>{{ msg.nickname }} 已离开</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-wrap">
+                        <a href="javascript:void(0);">
+                            <img src="./imgs/emoticon.svg" alt="">
+                        </a>
+                        <input type="text" placeholder="输入你要发送的内容" v-model="message"/>
+                        <a href="javascript:void(0);" class="send-message" @click="sendMessage">
+                            <img src="./imgs/send.svg" alt="">
+                        </a>
+                    </div>
+                </div>
+                <div class="room-details">
+                    <div class="details__header">
+                        <p>您的信息</p>
+                    </div>
+                    <div class="details__main">
+                        <div class="introduction">
+                            <div class="avatar wrap__avatar">
+                                <img :src="userInfo.avatar" alt="">
+                            </div>
+                            <div class="details__info">
+                                <span>{{ userInfo.nickname }} <img :src="'./imgs/'+userInfo.sex+'.svg'" alt=""></span>
+                                <p>{{ userInfo.introduction }} </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="details__header" style="border-top: 1px solid #DCDCDC;">
+                        <p>房间人数 {{ Object.keys( peopleList ).length }}人</p>
+                    </div>
+                    <div class="many-people">
+                        <div class="people" v-for="people of peopleList">
+                            <div class="avatar wrap__avatar">
+                                <img :src="people.avatar" alt="">
+                            </div>
+                            <div class="details__info">
+                                <span>{{ people.nickname }} <img
+                                        :src="'./imgs/'+people.sex+'.svg'" alt=""></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="login" v-if="userInfo.show">
+        <h1>聊天室</h1>
+        <input type="text" v-model="userInfo.nickname" placeholder="请输入您的名称">
+        <input type="text" v-model="userInfo.introduction" placeholder="请输入您的简介">
+        <input type="number" v-model="userInfo.roomId" placeholder="请输入房间ID">
+        <span style="margin-bottom: 15px;">请选择您的性别：</span>
+        <select v-model="userInfo.sex" style="margin: 0 0 20px;">
+            <option value="man">男生</option>
+            <option value="woman">女生</option>
+        </select>
+        <span style="margin-bottom: 15px;">请选择您的头像：</span>
+        <img :src="userInfo.avatar" v-if="userInfo.avatar">
+        <div class="select-img">
+            <img src="imgs/avatar6.jpeg" @click="selectImg" alt="">
+            <img src="imgs/avatar7.jpeg" @click="selectImg" alt="">
+            <img src="imgs/avatar4.jpg" @click="selectImg" alt="">
+            <img src="imgs/avatar5.jpg" @click="selectImg" alt="">
+        </div>
+        <button type="button" @click="enterRoom">进入聊天室</button>
+    </div>
+</main>
+<script>
+    const { ref, watch, reactive } = Vue
+    const Counter = {
+        setup () {
+            const userInfo = reactive( {
+                nickname: '',
+                avatar: '',
+                introduction: '',
+                sex: '',
+                roomId: '',
+                show: true
+            } )
+            const messageList = ref( [] )
+            const message = ref( '' )
+            const newMessage = ref( null )
+            const peopleList = ref( {} )
+            const str = "您有新的消息"
+            let ws = null
+
+            function sendMessage () {
+                if ( message.value ) {
+                    let hour = new Date().getHours() >= 10 ? new Date().getHours() : '0' + new Date().getHours()
+                    let min = new Date().getMinutes() >= 10 ? new Date().getMinutes() : '0' + new Date().getMinutes()
+                    const data = {
+                        event: 'message',
+                        msg: message.value,
+                        datetime: `${ hour }:${ min } ${ new Date().getHours() > 12 ? 'pm' : 'am' }`,
+                        avatar: userInfo.avatar,
+                        roomId: userInfo.roomId,
+                        nickname: userInfo.nickname,
+                    };
+                    sendToWS( data )
+                    newMessage.value = data
+                    message.value = ''
+                }
+            }
+
+            function sendToWS ( data ) {
+                ws.send( JSON.stringify( data ) )
+            }
+
+            function changeTitle ( close = false ) {
+                if ( !close ) {
+                    document.title = str
+                } else {
+                    document.title = '即时聊天'
+                }
+            }
+
+            function createWS () {
+                ws = new WebSocket( `ws://${ MY_IP }:3000` )
+
+                ws.onopen = function () {
+                    console.log( 'open:' + ws.readyState )
+                    const data = {
+                        event: 'login',
+                        ...userInfo
+                    }
+                    sendToWS( data )
+                }
+
+                ws.onmessage = function ( msg ) {
+                    console.log( 'message:' + ws.readyState )
+                    const data = JSON.parse( msg.data );
+
+                    ({
+                        login () {
+                            if ( !data.has ) {
+                                userInfo.show = false
+                            } else {
+                                alert( "该名称已被注册" )
+                            }
+                        },
+                        message () {
+                            messageList.value.push( data )
+                            newMessage.value = data
+                        },
+                        peopleList () {
+                            peopleList.value = data.peopleList
+                        },
+                        leave () {
+                            messageList.value.push( data )
+                        },
+                        welcome () {
+                            messageList.value.push( data )
+                        }
+                    })[data.event]?.()
+                }
+
+                ws.onclose = function () {
+                    console.log( 'close:' + ws.readyState )
+                    console.log( '已关闭websocket' )
+                }
+
+                ws.onerror = function () {
+                    console.log( 'err:' + ws.readyState )
+                    console.log( 'websocket连接失败' )
+                }
+            }
+
+            function selectImg ( e ) {
+                userInfo.avatar = e.target.src
+                for ( let i in e.target.parentElement.getElementsByTagName( 'img' ) ) {
+                    e.target.parentElement.getElementsByTagName( 'img' )[i].className = ''
+                }
+                e.target.classList.add( 'active' )
+            }
+
+            function enterRoom () {
+                if ( userInfo.nickname && userInfo.nickname.length < 25 && userInfo.avatar && userInfo.introduction && userInfo.sex ) {
+                    createWS()
+                } else {
+                    alert( '请完善所有信息' )
+                }
+            }
+
+            watch( messageList, ( newV, oldV ) => {
+                window.setTimeout( () => message_list.scrollTo( 0, message_list.scrollHeight ) )
+                document.visibilityState === 'hidden' && changeTitle()
+            }, { deep: true } )
+
+            window.onbeforeunload = e => {
+                if ( !userInfo.show ) {
+                    return true;
+                }
+            }
+
+            document.addEventListener( 'visibilitychange', function () {
+                document.visibilityState === 'visible' && changeTitle( true )
+            } )
+
+            window.onkeydown = e => {
+                if ( e.keyCode === 13 ) sendMessage()
+            }
+
+            return {
+                message,
+                messageList,
+                newMessage,
+                userInfo,
+                peopleList,
+                sendMessage,
+                selectImg,
+                enterRoom
+            }
+        }
+    }
+
+    Vue.createApp( Counter ).mount( '#app' )
+</script>
+</body>
+</html>

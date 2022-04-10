@@ -1,0 +1,20 @@
+{
+  "name": "chatRoom",
+  "version": "1.0.0",
+  "description": "- clone 本项目到本地\r - npm i -s 安装依赖\r - node server/index.js 运行服务\r - 打开 client/index.html 客户端\r - 输入必要信息就可以开始在线聊天了",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liao123-git/chatRoom.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/liao123-git/chatRoom/issues"
+  },
+  "homepage": "https://github.com/liao123-git/chatRoom#readme"
+}
